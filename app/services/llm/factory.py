@@ -6,6 +6,13 @@ from app.core.config import Settings
 from app.services.llm.anthropic import AnthropicLLMClient
 from app.services.llm.base import LLMClient
 from app.services.llm.openai import OpenAILLMClient
+from app.services.llm.together import TogetherLLMClient
+
+_KEY_ENV_NAME = {
+    "anthropic": "ANTHROPIC_API_KEY",
+    "openai": "OPENAI_API_KEY",
+    "together": "TOGETHER_API_KEY",
+}
 
 
 def build_llm_client(settings: Settings) -> LLMClient:
@@ -13,7 +20,7 @@ def build_llm_client(settings: Settings) -> LLMClient:
     if not api_key:
         raise RuntimeError(
             f"Missing API key for provider {settings.llm_provider!r}. "
-            f"Set {'ANTHROPIC_API_KEY' if settings.llm_provider == 'anthropic' else 'OPENAI_API_KEY'}."
+            f"Set {_KEY_ENV_NAME[settings.llm_provider]}."
         )
 
     common = {
@@ -26,4 +33,6 @@ def build_llm_client(settings: Settings) -> LLMClient:
 
     if settings.llm_provider == "anthropic":
         return AnthropicLLMClient(**common)
+    if settings.llm_provider == "together":
+        return TogetherLLMClient(base_url=settings.together_base_url, **common)
     return OpenAILLMClient(**common)

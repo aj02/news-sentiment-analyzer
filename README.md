@@ -372,23 +372,55 @@ doesn't read the previous version's stale entries.
 
 ## Swapping LLM providers
 
-Two env vars:
+Three providers are supported out of the box: **Anthropic**, **OpenAI**, and
+**Together AI** (Llama / Qwen / Mixtral / DeepSeek and the rest of Together's
+catalog). Switching is two env vars:
 
 ```bash
-LLM_PROVIDER=openai    # was: anthropic
-LLM_MODEL=gpt-4o-mini  # was: claude-haiku-4-5
+# Anthropic — Claude
+LLM_PROVIDER=anthropic
+LLM_MODEL=claude-haiku-4-5      # or claude-sonnet-4-6, claude-opus-4-7
+ANTHROPIC_API_KEY=sk-ant-...
+
+# OpenAI — GPT
+LLM_PROVIDER=openai
+LLM_MODEL=gpt-4o-mini           # or gpt-4o
+OPENAI_API_KEY=sk-...
+
+# Together AI — open-weights models, OpenAI-compatible API
+LLM_PROVIDER=together
+LLM_MODEL=meta-llama/Llama-3.3-70B-Instruct-Turbo
+# or: Qwen/Qwen2.5-72B-Instruct-Turbo
+# or: mistralai/Mixtral-8x7B-Instruct-v0.1
+TOGETHER_API_KEY=...
+TOGETHER_BASE_URL=https://api.together.xyz/v1   # default; override only for proxies
 ```
 
-Both providers receive the same system + user messages. OpenAI gets
-`response_format={"type":"json_object"}` for an extra JSON guarantee; Anthropic
-relies on prompt instruction plus the robust JSON decoder in
-[`app/services/llm/base.py`](app/services/llm/base.py).
+| Provider     | SDK used                          | JSON-mode strategy                                         |
+|--------------|-----------------------------------|------------------------------------------------------------|
+| Anthropic    | `anthropic` AsyncAnthropic        | Prompt instruction + robust JSON decoder fallback           |
+| OpenAI       | `openai` AsyncOpenAI              | `response_format={"type":"json_object"}` + decoder fallback |
+| Together AI  | `openai` AsyncOpenAI w/ base_url  | `response_format={"type":"json_object"}` + decoder fallback |
 
-Adding a third provider means subclassing `LLMClient`, returning an `LLMResult`,
-and registering it in [`app/services/llm/factory.py`](app/services/llm/factory.py).
-Roughly 70 lines for a complete implementation — see
-[`anthropic.py`](app/services/llm/anthropic.py) or
-[`openai.py`](app/services/llm/openai.py).
+All three receive the same system + user messages and return through the same
+`LLMResult` shape; the analyzer doesn't know which one it has. Together's API
+is OpenAI-compatible, so we hit it via the OpenAI SDK pointed at
+`https://api.together.xyz/v1` — no extra dependency. See
+[`app/services/llm/together.py`](app/services/llm/together.py) for the
+~30-line subclass.
+
+**Together model compatibility note**: the analyzer uses
+`response_format={"type":"json_object"}`, which most `*-Turbo` and recent
+chat-instruct models on Together support (Llama 3.x, Qwen 2.5, Mixtral, DeepSeek,
+etc.). If you pick a model that doesn't, Together returns a 400 that surfaces
+as a clean `llm_failed` 502 with the upstream message — switch models rather
+than working around it.
+
+Adding a fourth provider means subclassing `LLMClient`, returning an
+`LLMResult`, and registering it in
+[`app/services/llm/factory.py`](app/services/llm/factory.py). Roughly 70 lines
+for a fully native client; ~30 lines if the provider is OpenAI-compatible (see
+the Together subclass).
 
 ---
 
@@ -423,6 +455,9 @@ mid-2026):
 - **Claude Sonnet 4.6** (input ~$3/MTok, output ~$15/MTok): ≈ **$26.10** (≈ ₹2,160)
 - **GPT-4o-mini** (input ~$0.15/MTok, output ~$0.60/MTok): ≈ **$1.18** (≈ ₹98)
 - **GPT-4o** (input ~$2.50/MTok, output ~$10/MTok): ≈ **$19.75** (≈ ₹1,640)
+- **Together — Llama 3.3 70B Turbo** (~$0.88/MTok flat): ≈ **$4.84** (≈ ₹400)
+- **Together — Qwen 2.5 72B Turbo** (~$1.20/MTok flat): ≈ **$6.60** (≈ ₹550)
+- **Together — Mixtral 8x7B** (~$0.60/MTok flat): ≈ **$3.30** (≈ ₹275)
 
 The v3 schema is roughly **40–50% more expensive per call** than v2 (one extra
 axis block + two extra arrays + larger few-shot context). Whether that's worth
@@ -457,7 +492,7 @@ app/
 │   ├── analyzer.py  Orchestrator: fetch → cache → LLM → validate → cache → return
 │   ├── cache.py     Redis wrapper. Key = nsa:{prompt}:{model}:{sha256(url)}
 │   ├── fetcher.py   httpx + trafilatura + feedparser, with timeouts and byte caps
-│   └── llm/         Provider abstraction (base.py, anthropic.py, openai.py)
+│   └── llm/         Provider abstraction (base.py, anthropic.py, openai.py, together.py)
 ├── static/          Single-file dark-mode UI (no build step)
 └── main.py          App factory, lifespan-managed services, request-id middleware
 

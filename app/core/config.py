@@ -8,7 +8,12 @@ from typing import Literal
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-LLMProvider = Literal["anthropic", "openai"]
+LLMProvider = Literal["anthropic", "openai", "together"]
+
+# Together AI's Chat Completions API is OpenAI-compatible — we hit it via the
+# OpenAI SDK pointed at this base URL. Override with TOGETHER_BASE_URL only if
+# you're using a proxy or a self-hosted gateway.
+DEFAULT_TOGETHER_BASE_URL = "https://api.together.xyz/v1"
 
 
 class Settings(BaseSettings):
@@ -24,6 +29,8 @@ class Settings(BaseSettings):
     llm_model: str = "claude-haiku-4-5"
     anthropic_api_key: str | None = None
     openai_api_key: str | None = None
+    together_api_key: str | None = None
+    together_base_url: str = DEFAULT_TOGETHER_BASE_URL
     llm_max_output_tokens: int = Field(default=2000, ge=256, le=8192)
     llm_timeout_seconds: float = Field(default=45.0, gt=0)
     llm_max_retries: int = Field(default=3, ge=0, le=8)
@@ -55,7 +62,11 @@ class Settings(BaseSettings):
         return v.upper()
 
     def provider_api_key(self) -> str | None:
-        return self.anthropic_api_key if self.llm_provider == "anthropic" else self.openai_api_key
+        return {
+            "anthropic": self.anthropic_api_key,
+            "openai": self.openai_api_key,
+            "together": self.together_api_key,
+        }[self.llm_provider]
 
 
 @lru_cache(maxsize=1)

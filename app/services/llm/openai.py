@@ -1,4 +1,9 @@
-"""OpenAI provider. Uses Chat Completions with response_format=json_object."""
+"""OpenAI provider. Uses Chat Completions with response_format=json_object.
+
+This module is also the implementation for any OpenAI-compatible endpoint
+(e.g. Together AI). The `base_url` parameter is passed through to the OpenAI
+SDK; Together's `TogetherLLMClient` is a thin subclass that pre-fills it.
+"""
 
 from __future__ import annotations
 
@@ -27,6 +32,10 @@ _RETRY_EXCS: tuple[type[BaseException], ...] = (
 class OpenAILLMClient(LLMClient):
     name = "openai"
 
+    # Subclasses (e.g. Together) override this so error messages name the right
+    # provider. Falls back to `name` for the canonical OpenAI client.
+    _provider_label: str = "OpenAI"
+
     def __init__(
         self,
         *,
@@ -35,10 +44,12 @@ class OpenAILLMClient(LLMClient):
         max_output_tokens: int,
         timeout_seconds: float,
         max_retries: int,
+        base_url: str | None = None,
     ) -> None:
         super().__init__(model=model, max_output_tokens=max_output_tokens)
         self._client = openai.AsyncOpenAI(
             api_key=api_key,
+            base_url=base_url,
             timeout=timeout_seconds,
             max_retries=0,
         )
@@ -66,14 +77,17 @@ class OpenAILLMClient(LLMClient):
                     )
         except _RETRY_EXCS as e:
             raise LLMError(
-                f"OpenAI call failed after {self._max_retries} retries.",
+                f"{self._provider_label} call failed after {self._max_retries} retries.",
                 detail=f"{type(e).__name__}: {e}",
             ) from e
         except openai.APIError as e:
-            raise LLMError("OpenAI API error.", detail=f"{type(e).__name__}: {e}") from e
+            raise LLMError(
+                f"{self._provider_label} API error.",
+                detail=f"{type(e).__name__}: {e}",
+            ) from e
 
         if not response.choices:
-            raise LLMError("OpenAI returned no choices.")
+            raise LLMError(f"{self._provider_label} returned no choices.")
         message = response.choices[0].message
         text = message.content or ""
         parsed = self._decode_json(text)
