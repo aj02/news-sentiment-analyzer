@@ -10,11 +10,11 @@ from app.services.fetcher import Fetcher
 
 @pytest.mark.asyncio
 async def test_fetch_article_extracts_clean_text(fetcher: Fetcher):
-    content = await fetcher.fetch_article("https://example.test/articles/fed-rates")
-    assert "Federal Reserve" in content.text
-    assert "Subscribe to read" not in content.text  # not in this article anyway
+    content = await fetcher.fetch_article("https://example.test/articles/rbi-policy")
+    assert "Reserve Bank of India" in content.text
+    assert "Subscribe to read" not in content.text
     assert content.title is not None
-    assert "Fed" in content.title
+    assert "RBI" in content.title or "rate" in content.title.lower()
 
 
 @pytest.mark.asyncio
@@ -32,9 +32,9 @@ async def test_fetch_article_404_raises_fetch_error(fetcher: Fetcher):
 @pytest.mark.asyncio
 async def test_fetch_feed_returns_items(fetcher: Fetcher):
     feed = await fetcher.fetch_feed("https://example.test/feed", limit=10)
-    assert feed.feed_title == "Test News Feed"
+    assert feed.feed_title == "Indian Economy News"
     assert len(feed.items) == 2
-    assert feed.items[0].url == "https://example.test/articles/fed-rates"
+    assert feed.items[0].url == "https://example.test/articles/rbi-policy"
     assert feed.items[0].published_at is not None
 
 

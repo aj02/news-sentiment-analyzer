@@ -6,7 +6,14 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.schemas.sentiment import EntitySentiment, KeyClaim, LLMAnalysis, SentimentBlock
+from app.schemas.sentiment import (
+    Aspect,
+    EntitySentiment,
+    KeyClaim,
+    LLMAnalysis,
+    Quote,
+    SentimentBlock,
+)
 
 
 class AnalyzeResponse(BaseModel):
@@ -24,6 +31,8 @@ class AnalyzeResponse(BaseModel):
     sentiment: SentimentBlock
     entities: list[EntitySentiment]
     key_claims: list[KeyClaim]
+    aspects: list[Aspect]
+    quotes: list[Quote]
     topics: list[str]
 
     model_used: str
@@ -53,6 +62,8 @@ class AnalyzeResponse(BaseModel):
             sentiment=analysis.sentiment,
             entities=analysis.entities,
             key_claims=analysis.key_claims,
+            aspects=analysis.aspects,
+            quotes=analysis.quotes,
             topics=analysis.topics,
             model_used=model_used,
             tokens_used=tokens_used,

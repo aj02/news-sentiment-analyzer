@@ -1,0 +1,93 @@
+{
+  "url": "https://indianexpress.com/article/cities/bangalore/bengaluru-suburban-rail-yelahanka-groundbreaking-example/",
+  "title": "Bengaluru Suburban Rail Project breaks ground at Yelahanka after a decade of delays",
+  "published_at": "2026-04-29T03:30:00+00:00",
+  "summary": "The Bengaluru Suburban Rail Project began construction at Yelahanka station, ten years after it was first announced. Karnataka Chief Minister Siddaramaiah described the start as 'long overdue' and said it would 'transform mobility' for IT-corridor commutes. Residents along the route gave The Indian Express mixed reactions — some welcomed faster commutes, others worried about construction disruption and acquisition compensation.",
+  "sentiment": {
+    "overall": "neutral",
+    "score": 0.10,
+    "confidence": 0.45,
+    "rationale": "Evaluative language appears on both sides with comparable weight ('long overdue', 'transform mobility' versus 'construction noise', 'uncertainty over compensation'). Signal is genuinely weak; analyzer enforces confidence-clamp rule, so label is held to neutral and score bounded into [-0.2, 0.2].",
+    "subjectivity": 0.30,
+    "certainty": 0.60,
+    "emotions": {
+      "joy": 0.20,
+      "trust": 0.20,
+      "fear": 0.20,
+      "surprise": 0.05,
+      "sadness": 0.10,
+      "disgust": 0.0,
+      "anger": 0.10,
+      "anticipation": 0.50
+    }
+  },
+  "entities": [
+    { "name": "Bengaluru Suburban Rail Project", "type": "product", "sentiment": "neutral", "mentions": 4 },
+    { "name": "Siddaramaiah", "type": "person", "sentiment": "positive", "mentions": 2 },
+    { "name": "Yelahanka", "type": "location", "sentiment": "neutral", "mentions": 3 },
+    { "name": "Karnataka", "type": "location", "sentiment": "neutral", "mentions": 2 },
+    { "name": "The Indian Express", "type": "org", "sentiment": "neutral", "mentions": 1 },
+    { "name": "Asian Development Bank", "type": "org", "sentiment": "neutral", "mentions": 1 }
+  ],
+  "key_claims": [
+    { "claim": "Construction of the Bengaluru Suburban Rail Project began at Yelahanka station.", "stance": "asserted" },
+    { "claim": "The project was first announced ten years ago.", "stance": "asserted" },
+    { "claim": "The CM said the project would transform mobility for IT-corridor commuters.", "stance": "reported" },
+    { "claim": "Some residents welcomed faster commutes; others worried about construction noise and acquisition compensation.", "stance": "reported" },
+    { "claim": "The first phase covers 148 km of track across four corridors.", "stance": "asserted" },
+    { "claim": "Total project budget stands at ₹15,767 crore.", "stance": "asserted" }
+  ],
+  "aspects": [
+    {
+      "aspect": "project delivery timeline",
+      "sentiment": "negative",
+      "score": -0.40,
+      "evidence": "Project broke ground ten years after first announced; CM described start as 'long overdue'."
+    },
+    {
+      "aspect": "commute benefits",
+      "sentiment": "positive",
+      "score": 0.50,
+      "evidence": "Some residents welcomed expected faster commutes; CM said it would transform IT-corridor mobility."
+    },
+    {
+      "aspect": "construction disruption",
+      "sentiment": "negative",
+      "score": -0.40,
+      "evidence": "Residents worried about three years of construction noise and dust along the route."
+    },
+    {
+      "aspect": "land acquisition compensation",
+      "sentiment": "negative",
+      "score": -0.30,
+      "evidence": "Residents expressed uncertainty about acquisition compensation."
+    },
+    {
+      "aspect": "project funding",
+      "sentiment": "neutral",
+      "score": 0.10,
+      "evidence": "First phase is funded jointly by the Centre, the state government, and an ADB loan."
+    }
+  ],
+  "quotes": [
+    {
+      "text": "Long overdue.",
+      "speaker": "Siddaramaiah",
+      "speaker_role": "Karnataka Chief Minister",
+      "sentiment": "negative",
+      "framing": "neutral"
+    },
+    {
+      "text": "Transform mobility.",
+      "speaker": "Siddaramaiah",
+      "speaker_role": "Karnataka Chief Minister",
+      "sentiment": "positive",
+      "framing": "neutral"
+    }
+  ],
+  "topics": ["urban-transit", "bengaluru", "karnataka", "land-acquisition", "infrastructure"],
+  "model_used": "claude-haiku-4-5",
+  "tokens_used": 4044,
+  "cached": false,
+  "analysis_ms": 2389
+}

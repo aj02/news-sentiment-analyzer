@@ -24,7 +24,7 @@ def test_ready(client: TestClient):
 def test_analyze_happy_path(client: TestClient):
     r = client.post(
         "/analyze",
-        json={"url": "https://example.test/articles/fed-rates"},
+        json={"url": "https://example.test/articles/rbi-policy"},
     )
     assert r.status_code == 200, r.text
     body = r.json()
@@ -44,7 +44,7 @@ def test_analyze_invalid_url(client: TestClient):
 def test_analyze_extra_field_rejected(client: TestClient):
     r = client.post(
         "/analyze",
-        json={"url": "https://example.test/articles/fed-rates", "secret_flag": True},
+        json={"url": "https://example.test/articles/rbi-policy", "secret_flag": True},
     )
     assert r.status_code == 422
 
@@ -76,7 +76,7 @@ def test_analyze_feed(client: TestClient):
     )
     assert r.status_code == 200, r.text
     body = r.json()
-    assert body["feed_title"] == "Test News Feed"
+    assert body["feed_title"] == "Indian Economy News"
     assert body["items_attempted"] == 2
     assert body["items_succeeded"] == 2
     overalls = [r["analysis"]["sentiment"]["overall"] for r in body["results"]]

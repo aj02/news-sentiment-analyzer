@@ -1,0 +1,71 @@
+{
+  "url": "https://www.thehindu.com/sci-tech/science/isro-pslv-c61-launches-five-satellites-from-sriharikota-example.ece",
+  "title": "ISRO's PSLV-C61 places all five satellites in target orbit; chairman calls mission 'textbook'",
+  "published_at": "2026-04-18T08:42:00+00:00",
+  "summary": "ISRO successfully placed five satellites in target orbit using PSLV-C61 from Sriharikota on Friday morning, completing the agency's third commercial launch of the year. ISRO Chairman Dr. S. Somanath called the mission a 'textbook execution' and confirmed two more PSLV launches are slated for the current quarter. The mission included the first satellite from a Tier-2 city startup based in Bhubaneswar.",
+  "sentiment": {
+    "overall": "positive",
+    "score": 0.70,
+    "confidence": 0.88,
+    "rationale": "Coverage emphasizes 'successfully placed', 'textbook execution', and 'first satellite from a Tier-2 city startup', all strongly favorable framings of the mission and the broader ecosystem.",
+    "subjectivity": 0.25,
+    "certainty": 0.92,
+    "emotions": {
+      "joy": 0.65,
+      "trust": 0.70,
+      "fear": 0.0,
+      "surprise": 0.20,
+      "sadness": 0.0,
+      "disgust": 0.0,
+      "anger": 0.0,
+      "anticipation": 0.55
+    }
+  },
+  "entities": [
+    { "name": "ISRO", "type": "org", "sentiment": "positive", "mentions": 5 },
+    { "name": "PSLV-C61", "type": "product", "sentiment": "positive", "mentions": 3 },
+    { "name": "Sriharikota", "type": "location", "sentiment": "neutral", "mentions": 2 },
+    { "name": "Dr. S. Somanath", "type": "person", "sentiment": "positive", "mentions": 2 },
+    { "name": "Bhubaneswar", "type": "location", "sentiment": "positive", "mentions": 1 }
+  ],
+  "key_claims": [
+    { "claim": "PSLV-C61 placed all five satellites in their target orbits.", "stance": "asserted" },
+    { "claim": "The mission was ISRO's third commercial launch of the year.", "stance": "asserted" },
+    { "claim": "Two more PSLV launches are slated for the current quarter.", "stance": "reported" },
+    { "claim": "The mission included the first satellite from a Bhubaneswar-based Tier-2 city startup.", "stance": "asserted" }
+  ],
+  "aspects": [
+    {
+      "aspect": "mission execution",
+      "sentiment": "positive",
+      "score": 0.85,
+      "evidence": "All five satellites placed in target orbits; chairman called the mission a 'textbook execution'."
+    },
+    {
+      "aspect": "commercial launch cadence",
+      "sentiment": "positive",
+      "score": 0.55,
+      "evidence": "Third commercial launch of the year with two more slated for the current quarter."
+    },
+    {
+      "aspect": "Tier-2 startup ecosystem",
+      "sentiment": "positive",
+      "score": 0.70,
+      "evidence": "First satellite from a Bhubaneswar-based Tier-2 city startup highlights expanding participation."
+    }
+  ],
+  "quotes": [
+    {
+      "text": "Textbook execution.",
+      "speaker": "Dr. S. Somanath",
+      "speaker_role": "ISRO Chairman",
+      "sentiment": "positive",
+      "framing": "supportive"
+    }
+  ],
+  "topics": ["space-program", "isro", "pslv", "startups", "tier-2-cities"],
+  "model_used": "claude-haiku-4-5",
+  "tokens_used": 3892,
+  "cached": false,
+  "analysis_ms": 2231
+}

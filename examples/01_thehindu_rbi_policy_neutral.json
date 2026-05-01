@@ -1,0 +1,84 @@
+{
+  "url": "https://www.thehindu.com/business/Economy/rbi-mpc-holds-repo-rate-at-650-raises-fy25-growth-forecast/article_example.ece",
+  "title": "RBI holds repo rate at 6.50%, raises FY25 growth forecast to 7.2%",
+  "published_at": "2026-04-30T11:30:00+00:00",
+  "summary": "The Reserve Bank of India's Monetary Policy Committee unanimously held the repo rate at 6.50% and kept its withdrawal-of-accommodation stance for a sixth consecutive meeting. Governor Shaktikanta Das said inflation was on a glide path to 4% but warned of risks from an uncertain monsoon. The MPC raised its FY25 GDP growth forecast to 7.2% from 7.0%, citing strong rural demand recovery.",
+  "sentiment": {
+    "overall": "neutral",
+    "score": 0.05,
+    "confidence": 0.85,
+    "rationale": "Straight policy reporting with no evaluative framing. Slight tilt comes from the upward growth-forecast revision being a positive signal.",
+    "subjectivity": 0.10,
+    "certainty": 0.88,
+    "emotions": {
+      "joy": 0.10,
+      "trust": 0.55,
+      "fear": 0.20,
+      "surprise": 0.10,
+      "sadness": 0.0,
+      "disgust": 0.0,
+      "anger": 0.0,
+      "anticipation": 0.50
+    }
+  },
+  "entities": [
+    { "name": "Reserve Bank of India", "type": "org", "sentiment": "neutral", "mentions": 4 },
+    { "name": "Shaktikanta Das", "type": "person", "sentiment": "neutral", "mentions": 2 },
+    { "name": "Monetary Policy Committee", "type": "org", "sentiment": "neutral", "mentions": 3 },
+    { "name": "Sensex", "type": "org", "sentiment": "neutral", "mentions": 1 }
+  ],
+  "key_claims": [
+    { "claim": "The MPC voted unanimously to hold the repo rate at 6.50%.", "stance": "asserted" },
+    { "claim": "The withdrawal-of-accommodation stance was retained for the sixth consecutive meeting.", "stance": "asserted" },
+    { "claim": "Retail inflation eased to 4.83% in April.", "stance": "asserted" },
+    { "claim": "Food price volatility from an uncertain monsoon could disrupt the inflation trajectory.", "stance": "reported" },
+    { "claim": "The MPC raised the FY25 GDP growth forecast to 7.2% from 7.0%.", "stance": "asserted" },
+    { "claim": "Markets responded with little movement.", "stance": "asserted" }
+  ],
+  "aspects": [
+    {
+      "aspect": "repo rate trajectory",
+      "sentiment": "neutral",
+      "score": 0.0,
+      "evidence": "MPC held the repo rate at 6.50% for a sixth consecutive meeting."
+    },
+    {
+      "aspect": "inflation outlook",
+      "sentiment": "neutral",
+      "score": 0.10,
+      "evidence": "Inflation eased to 4.83% in April and is described as on a glide path to the 4% target."
+    },
+    {
+      "aspect": "GDP growth",
+      "sentiment": "positive",
+      "score": 0.45,
+      "evidence": "FY25 growth forecast raised to 7.2% from 7.0% citing strong rural demand."
+    },
+    {
+      "aspect": "monsoon risk",
+      "sentiment": "negative",
+      "score": -0.30,
+      "evidence": "Governor warned an uncertain monsoon could disrupt the inflation trajectory through food prices."
+    },
+    {
+      "aspect": "private capex",
+      "sentiment": "positive",
+      "score": 0.35,
+      "evidence": "Pickup in private capex cited as a contributor to the upward growth revision."
+    }
+  ],
+  "quotes": [
+    {
+      "text": "On a glide path to the 4% medium-term target.",
+      "speaker": "Shaktikanta Das",
+      "speaker_role": "RBI Governor",
+      "sentiment": "positive",
+      "framing": "supportive"
+    }
+  ],
+  "topics": ["monetary-policy", "rbi", "inflation", "gdp-growth", "monsoon"],
+  "model_used": "claude-haiku-4-5",
+  "tokens_used": 3617,
+  "cached": false,
+  "analysis_ms": 2104
+}

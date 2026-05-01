@@ -14,8 +14,6 @@ from pathlib import Path
 from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, Response
 
-_STATIC_DIR = Path(__file__).resolve().parent / "static"
-
 from app import __version__
 from app.api.errors import install_error_handlers
 from app.api.routes import router as api_router
@@ -25,6 +23,8 @@ from app.services.analyzer import Analyzer
 from app.services.cache import AnalysisCache
 from app.services.fetcher import Fetcher
 from app.services.llm.factory import build_llm_client
+
+_STATIC_DIR = Path(__file__).resolve().parent / "static"
 
 
 @asynccontextmanager

@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     llm_max_output_tokens: int = Field(default=2000, ge=256, le=8192)
     llm_timeout_seconds: float = Field(default=45.0, gt=0)
     llm_max_retries: int = Field(default=3, ge=0, le=8)
-    prompt_version: str = "v2"
+    prompt_version: str = "v3"
 
     # Fetcher
     fetch_timeout_seconds: float = Field(default=15.0, gt=0)

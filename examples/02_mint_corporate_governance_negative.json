@@ -1,0 +1,76 @@
+{
+  "url": "https://www.livemint.com/companies/news/sahyadri-foods-independent-directors-denied-audit-access-sebi-show-cause-example.html",
+  "title": "Sahyadri Foods independent directors denied audit access, ₹420 crore in related-party transactions flagged",
+  "published_at": "2026-04-22T05:14:00+00:00",
+  "summary": "A Mint investigation reports systemic governance failures at Sahyadri Foods Ltd, where independent directors say they were repeatedly denied access to audit reports flagging related-party transactions worth over ₹420 crore. Three directors have resigned in four months and SEBI has reportedly issued show-cause notices to the company and four promoters.",
+  "sentiment": {
+    "overall": "negative",
+    "score": -0.75,
+    "confidence": 0.90,
+    "rationale": "Loaded language including 'systemic governance failures', 'denied access', and 'operating blind' frames Sahyadri unfavorably. Director quotes and SEBI action both reinforce the negative framing.",
+    "subjectivity": 0.45,
+    "certainty": 0.78,
+    "emotions": {
+      "joy": 0.0,
+      "trust": 0.05,
+      "fear": 0.30,
+      "surprise": 0.25,
+      "sadness": 0.10,
+      "disgust": 0.55,
+      "anger": 0.50,
+      "anticipation": 0.30
+    }
+  },
+  "entities": [
+    { "name": "Sahyadri Foods Ltd.", "type": "org", "sentiment": "negative", "mentions": 6 },
+    { "name": "Mint", "type": "org", "sentiment": "neutral", "mentions": 3 },
+    { "name": "SEBI", "type": "org", "sentiment": "neutral", "mentions": 2 }
+  ],
+  "key_claims": [
+    { "claim": "Independent directors at Sahyadri Foods say they were repeatedly denied access to internal audit reports.", "stance": "reported" },
+    { "claim": "The flagged related-party transactions were worth over ₹420 crore.", "stance": "reported" },
+    { "claim": "Three directors have resigned in the past four months.", "stance": "asserted" },
+    { "claim": "SEBI has reportedly issued show-cause notices to the company and four promoters.", "stance": "reported" },
+    { "claim": "Sahyadri Foods has not publicly commented on the specific allegations.", "stance": "asserted" }
+  ],
+  "aspects": [
+    {
+      "aspect": "board governance",
+      "sentiment": "negative",
+      "score": -0.80,
+      "evidence": "Independent directors say they were repeatedly denied access to internal audit reports."
+    },
+    {
+      "aspect": "related-party transactions",
+      "sentiment": "negative",
+      "score": -0.70,
+      "evidence": "Audit reports flagged related-party transactions worth over ₹420 crore."
+    },
+    {
+      "aspect": "regulatory action",
+      "sentiment": "negative",
+      "score": -0.50,
+      "evidence": "SEBI has reportedly issued show-cause notices to the company and four promoters."
+    },
+    {
+      "aspect": "disclosure practices",
+      "sentiment": "negative",
+      "score": -0.55,
+      "evidence": "Three directors resigned within four months and the company has not publicly addressed the allegations."
+    }
+  ],
+  "quotes": [
+    {
+      "text": "It became impossible to discharge our fiduciary duty when we were operating blind.",
+      "speaker": "Unnamed resigned director",
+      "speaker_role": "former independent director",
+      "sentiment": "negative",
+      "framing": "supportive"
+    }
+  ],
+  "topics": ["corporate-governance", "sebi", "audit", "related-party-transactions"],
+  "model_used": "claude-haiku-4-5",
+  "tokens_used": 4218,
+  "cached": false,
+  "analysis_ms": 2456
+}
