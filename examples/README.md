@@ -42,11 +42,9 @@ Every file validates against `app.schemas.responses.AnalyzeResponse` — run
 
 ## Notes on provenance
 
-These examples illustrate the schema and prompt behavior. The article URLs are
-real publishers — The Hindu, Mint, The Indian Express — but any specific
-article that was analyzed at a given moment may have moved or been updated
-since. Re-running `/analyze` against a current URL on the same site will
-produce a freshly generated structure of the same shape. If you re-run any of
-these against the live API, your numeric fields (`tokens_used`, `analysis_ms`,
-`mentions`, exact emotion intensities, `score` and `confidence`) will differ
-from what's checked in here; that's expected.
+The article URLs point at real publishers — The Hindu, Mint, The Indian
+Express — but each example file is a representative shape of what the v3
+analyzer produces on that kind of content. Re-running `/analyze` against a
+current article on the same site will return the same JSON structure with
+freshly generated values; the numeric fields (`tokens_used`, `analysis_ms`,
+exact emotion intensities, `score`, `confidence`) will naturally differ.

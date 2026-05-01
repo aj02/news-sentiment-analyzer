@@ -72,25 +72,24 @@ Hindu, Mint, and The Indian Express.
 
 ---
 
-## What's "advanced" about the sentiment analysis
+## Multi-axis sentiment, not a single label
 
 Most LLM-based sentiment tools collapse an article into one label and a score.
 This service produces six independent dimensions per article:
 
-| Dimension                      | Range / shape           | What it captures                                                                 |
-|--------------------------------|-------------------------|----------------------------------------------------------------------------------|
-| `sentiment.overall` + `score`  | label + [-1, 1]         | Polarity — the article's tone toward its primary subject.                        |
-| `sentiment.confidence`         | [0, 1]                  | Self-assessed certainty in the polarity label. < 0.5 forces label to neutral.    |
-| `sentiment.subjectivity`       | [0, 1]                  | Factual reporting ↔ editorialized commentary. *Independent of polarity.*         |
-| `sentiment.certainty`          | [0, 1]                  | Hedged ('could', 'may') ↔ stated as definite fact. *Independent of polarity.*    |
-| `sentiment.emotions`           | 8 values, each [0, 1]   | Plutchik wheel — joy, trust, fear, surprise, sadness, disgust, anger, anticipation. |
-| `aspects[]`                    | up to 8 items           | Aspect-based sentiment — per-topic polarity within the article.                  |
-| `quotes[]`                     | up to 8 items           | Direct quotes with `speaker`, `speaker_role`, sentiment, and `framing`.          |
+| Dimension                       | Range / shape                            | What it captures                                                                 |
+|---------------------------------|------------------------------------------|----------------------------------------------------------------------------------|
+| **Polarity**                    | label (pos/neg/neu/mixed) + `score` [-1, 1] + `confidence` [0, 1] | The article's tone toward its primary subject. `confidence < 0.5` forces label to `neutral`. |
+| **Subjectivity**                | [0, 1]                                   | Factual reporting ↔ editorialized commentary. *Independent of polarity.*         |
+| **Certainty**                   | [0, 1]                                   | Hedged (`could`, `may`) ↔ stated as definite fact. *Independent of polarity.*    |
+| **Emotions** (Plutchik 8)       | 8 values, each [0, 1]                    | `joy`, `trust`, `fear`, `surprise`, `sadness`, `disgust`, `anger`, `anticipation`. |
+| **Aspects[]**                   | up to 8 items                            | Aspect-based sentiment — per-topic polarity within the article, with evidence.   |
+| **Quotes[]**                    | up to 8 items                            | Direct quotes with `speaker`, `speaker_role`, sentiment, and `framing`.          |
 
 The interesting work is in surfacing the **second-order** structure that
 single-label sentiment loses. An RBI policy piece can be `overall: neutral`
 but contain `aspects: [GDP growth: positive, monsoon risk: negative]`. A
-corporate-governance investigation can be `overall: negative` but with high
+corporate-governance investigation can be `overall: negative` with high
 subjectivity — telling you *how* the article is negative, not just that it is.
 
 The four committed examples in [`examples/`](examples/) walk through these
@@ -101,28 +100,27 @@ combinations.
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                              FastAPI app                                │
-│                                                                         │
-│   GET /        UI (vanilla HTML, dark mode, no build step)              │
-│   POST /analyze        POST /analyze/feed       GET /health  /ready     │
-│        │                     │                                          │
-│        └─────────────────────┴──────────────┐                           │
-│                                             ▼                           │
-│                                    ┌─────────────────┐                  │
-│                                    │    Analyzer     │                  │
-│                                    └────────┬────────┘                  │
-│                                             │                           │
-│      ┌─────────────────┬────────────────────┼────────────────────┐      │
-│      ▼                 ▼                    ▼                    ▼      │
-│  ┌─────────┐     ┌──────────┐         ┌─────────┐         ┌───────────┐ │
-│  │ Fetcher │     │  Prompt  │         │   LLM   │         │   Cache   │ │
-│  │ httpx + │     │  loader  │         │  client │         │  Redis    │ │
-│  │trafil-  │     │ (Jinja2, │         │ Anthropic│        │ orjson    │ │
-│  │atura +  │     │ versioned│         │ or OpenAI│        │           │ │
-│  │feedparser│   │ on disk) │         └─────────┘         └───────────┘ │
-│  └─────────┘     └──────────┘                                           │
-└─────────────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────┐
+│                              FastAPI app                                 │
+│                                                                          │
+│   GET  /             UI (vanilla HTML, dark mode, no build step)         │
+│   POST /analyze      POST /analyze/feed       GET /health   GET /ready   │
+│           │                  │                                           │
+│           └──────────────────┴──────────────┐                            │
+│                                             ▼                            │
+│                                    ┌─────────────────┐                   │
+│                                    │    Analyzer     │                   │
+│                                    └────────┬────────┘                   │
+│                                             │                            │
+│       ┌─────────────────┬───────────────────┼─────────────────┐          │
+│       ▼                 ▼                   ▼                 ▼          │
+│  ┌──────────┐    ┌────────────┐     ┌──────────────┐    ┌──────────┐     │
+│  │ Fetcher  │    │  Prompts   │     │  LLM client  │    │  Cache   │     │
+│  │  httpx + │    │  Jinja2,   │     │  Anthropic   │    │  Redis   │     │
+│  │trafilatura│   │ versioned  │     │  / OpenAI    │    │  orjson  │     │
+│  │+feedparser│   │  on disk   │     │  / Together  │    │          │     │
+│  └──────────┘    └────────────┘     └──────────────┘    └──────────┘     │
+└──────────────────────────────────────────────────────────────────────────┘
 ```
 
 Request lifecycle for `POST /analyze`:
@@ -139,9 +137,9 @@ Request lifecycle for `POST /analyze`:
 5. **Render prompt** — load the configured `PROMPT_VERSION` from disk; inject
    the `LLMAnalysis.model_json_schema()` so the prompt is always in sync with
    the validating model.
-6. **Call LLM** — Anthropic or OpenAI behind the `LLMClient` interface. Tenacity
-   wrapper: exponential backoff, retry only on transport / rate-limit / server
-   errors. Per-call timeout from `LLM_TIMEOUT_SECONDS`.
+6. **Call LLM** — Anthropic, OpenAI, or Together AI behind the `LLMClient`
+   interface. Tenacity wrapper: exponential backoff, retry only on transport /
+   rate-limit / server errors. Per-call timeout from `LLM_TIMEOUT_SECONDS`.
 7. **Parse + validate** — robust JSON decode (handles ```json fences and prose
    prefixes), then `LLMAnalysis.model_validate`. Schema mismatch → `LLMError`.
 8. **Confidence clamp** — if the model returned `confidence < 0.5` but didn't
@@ -165,7 +163,10 @@ cd news-sentiment-analyzer
 
 ```bash
 cp .env.example .env
-# Set ANTHROPIC_API_KEY (or switch to OPENAI_API_KEY + LLM_PROVIDER=openai)
+# In .env, set ONE of:
+#   ANTHROPIC_API_KEY=sk-ant-...                   (default LLM_PROVIDER=anthropic)
+#   OPENAI_API_KEY=sk-...     + LLM_PROVIDER=openai
+#   TOGETHER_API_KEY=...      + LLM_PROVIDER=together
 make install
 docker run -d --rm --name nsa-redis -p 6379:6379 redis:7-alpine
 make run
@@ -373,8 +374,8 @@ doesn't read the previous version's stale entries.
 ## Swapping LLM providers
 
 Three providers are supported out of the box: **Anthropic**, **OpenAI**, and
-**Together AI** (Llama / Qwen / Mixtral / DeepSeek and the rest of Together's
-catalog). Switching is two env vars:
+**Together AI** (Llama, Qwen, Mixtral and other open-weights models in
+Together's catalog). Switching is two env vars:
 
 ```bash
 # Anthropic — Claude
@@ -411,10 +412,10 @@ is OpenAI-compatible, so we hit it via the OpenAI SDK pointed at
 
 **Together model compatibility note**: the analyzer uses
 `response_format={"type":"json_object"}`, which most `*-Turbo` and recent
-chat-instruct models on Together support (Llama 3.x, Qwen 2.5, Mixtral, DeepSeek,
-etc.). If you pick a model that doesn't, Together returns a 400 that surfaces
-as a clean `llm_failed` 502 with the upstream message — switch models rather
-than working around it.
+chat-instruct models on Together support (Llama 3.x, Qwen 2.5, Mixtral). If you
+pick a model that doesn't, Together returns a 400 that surfaces as a clean
+`llm_failed` 502 with the upstream message — switch models rather than working
+around it.
 
 Adding a fourth provider means subclassing `LLMClient`, returning an
 `LLMResult`, and registering it in
@@ -467,8 +468,9 @@ pipeline. If you don't, set `PROMPT_VERSION=v2` to fall back.
 
 Caching matters: re-analyzing the same URL is a Redis hit at zero LLM cost.
 With a typical news-aggregation workload (re-pulls of the same RSS feed,
-retries after transient failures), 30–60% of `/analyze` calls go to cache in
-practice.
+retries after transient failures), expect a meaningful share of `/analyze`
+calls to hit cache; the actual hit rate depends on feed re-pull cadence,
+TTL, and how often you `force_refresh`.
 
 These numbers are **sketches** — re-derive against current pricing and your
 actual article distribution before quoting them anywhere it matters.
@@ -497,15 +499,16 @@ app/
 └── main.py          App factory, lifespan-managed services, request-id middleware
 
 tests/
-├── fixtures/        Static HTML, RSS XML, canned LLM JSON (Indian-context, v3 schema)
-├── conftest.py      Real services + a FakeLLMClient + fakeredis
-├── test_analyzer.py happy path, cache hit, force_refresh, LLM/schema failure, clamp
-├── test_api.py      end-to-end through FastAPI TestClient
-├── test_cache.py    round-trip, key namespacing, ping
-├── test_fetcher.py  extraction, paywall, 404, RSS parse + limit
-├── test_llm_base.py JSON decoder edge cases (fences, prose-around-JSON)
-├── test_prompts.py  versions load, schema embedded, render shape
-└── test_schemas.py  v2 invariants + v3 axes/aspects/quotes validation
+├── fixtures/           Static HTML, RSS XML, canned LLM JSON (Indian-context, v3 schema)
+├── conftest.py         Real services + a FakeLLMClient + fakeredis
+├── test_analyzer.py    happy path, cache hit, force_refresh, LLM/schema failure, clamp
+├── test_api.py         end-to-end through FastAPI TestClient
+├── test_cache.py       round-trip, key namespacing, ping
+├── test_fetcher.py     extraction, paywall, 404, RSS parse + limit
+├── test_llm_base.py    JSON decoder edge cases (fences, prose-around-JSON)
+├── test_llm_factory.py provider dispatch (anthropic / openai / together)
+├── test_prompts.py     versions load, schema embedded, render shape
+└── test_schemas.py     v2 invariants + v3 axes/aspects/quotes validation
 
 examples/            Committed JSON outputs from real Indian news article URLs
 ```
