@@ -1,0 +1,30 @@
+{
+  "url": "https://www.bbc.com/news/articles/c1234example-fed-rates",
+  "title": "Federal Reserve holds interest rates steady as inflation cools",
+  "published_at": "2026-04-30T18:30:00+00:00",
+  "summary": "The Federal Reserve kept its benchmark interest rate unchanged at a range of 4.25% to 4.5%, citing continued progress on inflation. Chair Jerome Powell told reporters the committee was 'in no hurry' to adjust policy and would rely on incoming inflation and labor-market data to guide future decisions.",
+  "sentiment": {
+    "overall": "neutral",
+    "score": 0.0,
+    "confidence": 0.88,
+    "rationale": "Straight policy reporting with no evaluative framing. The article describes the decision and quotes the Fed chair without adopting a position."
+  },
+  "entities": [
+    { "name": "Federal Reserve", "type": "org", "sentiment": "neutral", "mentions": 4 },
+    { "name": "Jerome Powell", "type": "person", "sentiment": "neutral", "mentions": 2 },
+    { "name": "S&P 500", "type": "org", "sentiment": "neutral", "mentions": 1 },
+    { "name": "United States Treasury", "type": "org", "sentiment": "neutral", "mentions": 1 }
+  ],
+  "key_claims": [
+    { "claim": "The Federal Reserve held its benchmark interest rate at 4.25-4.5%.", "stance": "asserted" },
+    { "claim": "The decision was unanimous.", "stance": "asserted" },
+    { "claim": "The committee was in no hurry to adjust policy.", "stance": "reported" },
+    { "claim": "Inflation has cooled meaningfully but remains above the 2% target.", "stance": "asserted" },
+    { "claim": "Markets responded with little movement.", "stance": "asserted" }
+  ],
+  "topics": ["monetary-policy", "federal-reserve", "inflation", "us-economy"],
+  "model_used": "claude-haiku-4-5",
+  "tokens_used": 3617,
+  "cached": false,
+  "analysis_ms": 2104
+}

@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>news-sentiment-analyzer</title>
+  <style>
+    :root {
+      --bg: #0e1116;
+      --panel: #161b22;
+      --panel-2: #1c232c;
+      --border: #2a3340;
+      --text: #e6edf3;
+      --muted: #8b96a3;
+      --accent: #4f8bff;
+
+      --pos: #2ea043;
+      --neg: #f85149;
+      --neu: #6e7681;
+      --mix: #d29922;
+
+      --asserted: #4f8bff;
+      --reported: #a371f7;
+      --speculated: #d29922;
+
+      --radius: 10px;
+      --shadow: 0 1px 0 #00000040, 0 4px 16px #00000030;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font: 14px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      min-height: 100vh;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+    .wrap { max-width: 980px; margin: 0 auto; padding: 28px 20px 80px; }
+
+    header { display: flex; align-items: baseline; gap: 14px; margin-bottom: 8px; }
+    header h1 { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
+    header .ver { color: var(--muted); font-size: 12px; }
+    header .links { margin-left: auto; display: flex; gap: 14px; font-size: 13px; }
+
+    .tagline { color: var(--muted); margin: 0 0 22px; }
+
+    .tabs { display: flex; gap: 4px; margin-bottom: 12px; border-bottom: 1px solid var(--border); }
+    .tab {
+      background: transparent; border: none; color: var(--muted);
+      padding: 8px 14px; cursor: pointer; font-size: 13px; font-weight: 500;
+      border-bottom: 2px solid transparent;
+    }
+    .tab[aria-selected="true"] { color: var(--text); border-bottom-color: var(--accent); }
+
+    .panel {
+      background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 18px; box-shadow: var(--shadow);
+    }
+    .panel + .panel { margin-top: 16px; }
+
+    form .row { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: stretch; }
+    form .row.feed { grid-template-columns: 1fr 100px auto; }
+    input[type="url"], input[type="number"] {
+      background: var(--panel-2); color: var(--text);
+      border: 1px solid var(--border); border-radius: 8px;
+      padding: 10px 12px; font-size: 14px; outline: none;
+      transition: border-color 0.15s ease;
+    }
+    input[type="url"]:focus, input[type="number"]:focus { border-color: var(--accent); }
+    button.primary {
+      background: var(--accent); color: white; border: none;
+      border-radius: 8px; padding: 0 18px; font-weight: 500; font-size: 14px;
+      cursor: pointer; transition: filter 0.15s ease;
+    }
+    button.primary:hover { filter: brightness(1.1); }
+    button.primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .opts { display: flex; gap: 18px; align-items: center; margin-top: 10px; font-size: 13px; color: var(--muted); }
+    .opts label { cursor: pointer; }
+
+    /* Status / loader */
+    .status { margin-top: 14px; min-height: 18px; font-size: 13px; color: var(--muted); }
+    .spinner {
+      display: inline-block; width: 12px; height: 12px;
+      border: 2px solid var(--border); border-top-color: var(--accent);
+      border-radius: 50%; animation: spin 0.8s linear infinite; margin-right: 8px; vertical-align: -2px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Result */
+    .article-head { display: flex; gap: 12px; align-items: baseline; }
+    .article-head h2 { margin: 0; font-size: 18px; font-weight: 600; }
+    .article-head .pub { color: var(--muted); font-size: 12px; margin-left: auto; white-space: nowrap; }
+    .article-url { color: var(--muted); font-size: 12px; margin-top: 2px; word-break: break-all; }
+
+    .grid-2 { display: grid; grid-template-columns: 1.1fr 1fr; gap: 16px; }
+    @media (max-width: 760px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    /* Sentiment hero */
+    .sentiment-card .label-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 11px; border-radius: 999px; font-size: 12px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .badge.pos { background: rgba(46, 160, 67, 0.18); color: #56d364; }
+    .badge.neg { background: rgba(248, 81, 73, 0.18); color: #ff7b72; }
+    .badge.neu { background: rgba(110, 118, 129, 0.22); color: #adbac7; }
+    .badge.mix { background: rgba(210, 153, 34, 0.18); color: #e3b341; }
+
+    .meter { margin: 8px 0 14px; }
+    .meter .bar-track { background: var(--panel-2); height: 6px; border-radius: 999px; position: relative; overflow: hidden; }
+    .meter .bar-fill { position: absolute; top: 0; bottom: 0; }
+    .meter .legend {
+      display: flex; justify-content: space-between; font-size: 11px;
+      color: var(--muted); margin-top: 4px;
+    }
+    .meter .label-line {
+      display: flex; justify-content: space-between; font-size: 12px;
+      color: var(--muted); margin-bottom: 6px;
+    }
+    .meter .label-line strong { color: var(--text); font-weight: 500; }
+
+    .rationale {
+      color: var(--muted); font-size: 13px; line-height: 1.6;
+      border-left: 2px solid var(--border); padding-left: 12px; margin-top: 6px;
+    }
+
+    /* Summary */
+    .summary { font-size: 14px; line-height: 1.7; }
+
+    h3.section { margin: 0 0 10px; font-size: 13px; font-weight: 600;
+      color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+
+    /* Entities */
+    .pills { display: flex; flex-wrap: wrap; gap: 6px; }
+    .pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--panel-2); border: 1px solid var(--border);
+      border-radius: 999px; padding: 4px 10px; font-size: 12px;
+    }
+    .pill .dot { width: 7px; height: 7px; border-radius: 50%; }
+    .pill .dot.pos { background: var(--pos); }
+    .pill .dot.neg { background: var(--neg); }
+    .pill .dot.neu { background: var(--neu); }
+    .pill .ent-type { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; }
+    .pill .mentions { color: var(--muted); font-size: 11px; }
+
+    .topic-pill {
+      background: rgba(79, 139, 255, 0.12); color: #a8caff;
+      border: 1px solid rgba(79, 139, 255, 0.3);
+    }
+
+    /* Claims */
+    .claims { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+    .claim {
+      display: flex; gap: 12px; align-items: flex-start;
+      padding: 10px 12px; background: var(--panel-2);
+      border-radius: 8px; border: 1px solid var(--border);
+    }
+    .claim .text { flex: 1; font-size: 13px; line-height: 1.55; }
+    .stance-tag {
+      flex-shrink: 0; font-size: 10px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.05em;
+      padding: 3px 8px; border-radius: 4px; align-self: flex-start;
+    }
+    .stance-tag.asserted   { background: rgba(79, 139, 255, 0.18); color: #79b8ff; }
+    .stance-tag.reported   { background: rgba(163, 113, 247, 0.18); color: #c8a4ff; }
+    .stance-tag.speculated { background: rgba(210, 153, 34, 0.18); color: #e3b341; }
+
+    /* Meta footer */
+    .meta-strip {
+      display: flex; flex-wrap: wrap; gap: 18px; margin-top: 18px;
+      padding-top: 14px; border-top: 1px solid var(--border);
+      font-size: 12px; color: var(--muted);
+    }
+    .meta-strip .item strong { color: var(--text); font-weight: 500; }
+    .meta-strip .cache-yes { color: #56d364; }
+    .meta-strip .cache-no  { color: var(--muted); }
+
+    /* Error */
+    .error {
+      background: rgba(248, 81, 73, 0.08);
+      border: 1px solid rgba(248, 81, 73, 0.4);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+    }
+    .error .code { font-family: ui-monospace, monospace; color: #ff7b72; font-size: 12px; font-weight: 600; }
+    .error .msg { margin: 6px 0 0; }
+    .error .rid { margin-top: 8px; color: var(--muted); font-size: 11px; font-family: ui-monospace, monospace; }
+
+    /* Feed list */
+    .feed-summary { display: flex; gap: 18px; font-size: 13px; color: var(--muted); margin-bottom: 14px; }
+    .feed-summary strong { color: var(--text); }
+    .feed-item {
+      border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 14px 16px; margin-bottom: 10px;
+      background: var(--panel);
+    }
+    .feed-item.failed { background: rgba(248, 81, 73, 0.04); border-color: rgba(248, 81, 73, 0.3); }
+    .feed-item h4 { margin: 0 0 4px; font-size: 14px; font-weight: 500; }
+    .feed-item .url { color: var(--muted); font-size: 11px; word-break: break-all; }
+    .feed-item .row { display: flex; gap: 10px; margin-top: 8px; align-items: center; flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>news-sentiment-analyzer</h1>
+      <span class="ver" id="version">v…</span>
+      <span class="links">
+        <a href="/docs">/docs</a>
+        <a href="/redoc">/redoc</a>
+        <a href="https://github.com/aj02/news-sentiment-analyzer" target="_blank" rel="noopener">github</a>
+      </span>
+    </header>
+    <p class="tagline">Paste a news article URL or RSS feed. Get structured sentiment, entities, and key claims back.</p>
+
+    <div class="tabs" role="tablist">
+      <button class="tab" data-tab="url"  aria-selected="true">Single URL</button>
+      <button class="tab" data-tab="feed" aria-selected="false">RSS Feed</button>
+    </div>
+
+    <section class="panel" id="form-panel">
+      <!-- single URL form -->
+      <form id="url-form" data-form="url">
+        <div class="row">
+          <input type="url" id="url-input" placeholder="https://www.bbc.com/news/articles/…" required autocomplete="off" />
+          <button class="primary" type="submit">Analyze</button>
+        </div>
+        <div class="opts">
+          <label><input type="checkbox" id="url-force" /> Force refresh (bypass cache)</label>
+        </div>
+      </form>
+
+      <!-- RSS feed form -->
+      <form id="feed-form" data-form="feed" hidden>
+        <div class="row feed">
+          <input type="url" id="feed-input" placeholder="https://feeds.bbci.co.uk/news/rss.xml" required autocomplete="off" />
+          <input type="number" id="feed-limit" min="1" max="50" value="5" />
+          <button class="primary" type="submit">Analyze feed</button>
+        </div>
+        <div class="opts">
+          <label><input type="checkbox" id="feed-force" /> Force refresh (bypass cache)</label>
+          <span>Limit applies to items pulled from the feed (max 50).</span>
+        </div>
+      </form>
+
+      <div class="status" id="status"></div>
+    </section>
+
+    <section id="result"></section>
+  </div>
+
+  <script>
+    // ─── version (cosmetic) ────────────────────────────────────────────────
+    fetch("/health").then(r => r.json()).then(j => {
+      document.getElementById("version").textContent = "v" + j.version;
+    }).catch(() => {});
+
+    // ─── tabs ──────────────────────────────────────────────────────────────
+    const tabs = document.querySelectorAll(".tab");
+    const forms = { url: document.getElementById("url-form"), feed: document.getElementById("feed-form") };
+    tabs.forEach(t => t.addEventListener("click", () => {
+      tabs.forEach(x => x.setAttribute("aria-selected", x === t ? "true" : "false"));
+      Object.entries(forms).forEach(([k, f]) => f.hidden = (k !== t.dataset.tab));
+      setStatus("");
+      document.getElementById("result").innerHTML = "";
+    }));
+
+    // ─── helpers ───────────────────────────────────────────────────────────
+    const setStatus = (html) => { document.getElementById("status").innerHTML = html; };
+    const escapeHtml = (s) => String(s ?? "")
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+
+    const fmtDate = (iso) => {
+      if (!iso) return "";
+      try {
+        const d = new Date(iso);
+        if (isNaN(d.getTime())) return "";
+        return d.toLocaleString(undefined, {
+          year: "numeric", month: "short", day: "numeric",
+          hour: "2-digit", minute: "2-digit"
+        });
+      } catch { return ""; }
+    };
+
+    const labelClass = (overall) => ({ positive: "pos", negative: "neg", neutral: "neu", mixed: "mix" }[overall] || "neu");
+
+    // ─── score / confidence bars ───────────────────────────────────────────
+    function scoreBarHtml(score) {
+      // -1 .. +1 mapped onto a single track. Marker positioned by score.
+      const pct = Math.max(0, Math.min(100, ((score + 1) / 2) * 100));
+      const pos = score >= 0;
+      const fillStart = 50;
+      const fillWidth = Math.abs(score) * 50;
+      const fillLeft  = pos ? fillStart : (fillStart - fillWidth);
+      const color = pos ? "var(--pos)" : "var(--neg)";
+      return `
+        <div class="meter">
+          <div class="label-line"><span>Score</span><strong>${score.toFixed(2)}</strong></div>
+          <div class="bar-track">
+            <div class="bar-fill" style="left:${fillLeft}%; width:${fillWidth}%; background:${color};"></div>
+            <div style="position:absolute; left:50%; top:-2px; bottom:-2px; width:1px; background:var(--border);"></div>
+          </div>
+          <div class="legend"><span>−1.0</span><span>0</span><span>+1.0</span></div>
+        </div>`;
+    }
+    function confidenceBarHtml(conf) {
+      const pct = Math.max(0, Math.min(100, conf * 100));
+      return `
+        <div class="meter">
+          <div class="label-line"><span>Confidence</span><strong>${conf.toFixed(2)}</strong></div>
+          <div class="bar-track">
+            <div class="bar-fill" style="left:0; width:${pct}%; background:var(--accent);"></div>
+          </div>
+          <div class="legend"><span>0.0</span><span>1.0</span></div>
+        </div>`;
+    }
+
+    // ─── render ────────────────────────────────────────────────────────────
+    function renderError(payload, status) {
+      return `
+        <div class="panel error">
+          <div class="code">${escapeHtml(payload.error || ("http_" + status))}</div>
+          <p class="msg">${escapeHtml(payload.message || "Request failed.")}</p>
+          ${payload.detail ? `<p class="msg" style="color:var(--muted); font-size:12px;">${escapeHtml(payload.detail)}</p>` : ""}
+          ${payload.request_id ? `<div class="rid">request_id: ${escapeHtml(payload.request_id)}</div>` : ""}
+        </div>`;
+    }
+
+    function renderAnalysis(a) {
+      const klass = labelClass(a.sentiment.overall);
+      const entities = (a.entities || []).map(e => `
+        <span class="pill" title="${escapeHtml(e.type)} · article portrays as ${escapeHtml(e.sentiment)}">
+          <span class="dot ${labelClass(e.sentiment)}"></span>
+          ${escapeHtml(e.name)}
+          <span class="ent-type">${escapeHtml(e.type)}</span>
+          <span class="mentions">×${e.mentions}</span>
+        </span>`).join("") || `<span class="pill" style="color:var(--muted);">none extracted</span>`;
+
+      const claims = (a.key_claims || []).map(c => `
+        <li class="claim">
+          <span class="text">${escapeHtml(c.claim)}</span>
+          <span class="stance-tag ${escapeHtml(c.stance)}">${escapeHtml(c.stance)}</span>
+        </li>`).join("") || `<li class="claim"><span class="text" style="color:var(--muted);">no key claims extracted</span></li>`;
+
+      const topics = (a.topics || []).map(t => `<span class="pill topic-pill">${escapeHtml(t)}</span>`).join("")
+        || `<span class="pill" style="color:var(--muted);">none</span>`;
+
+      return `
+        <div class="panel">
+          <div class="article-head">
+            <h2>${escapeHtml(a.title || "Untitled")}</h2>
+            <span class="pub">${escapeHtml(fmtDate(a.published_at))}</span>
+          </div>
+          <div class="article-url"><a href="${escapeHtml(a.url)}" target="_blank" rel="noopener">${escapeHtml(a.url)}</a></div>
+
+          <div class="grid-2" style="margin-top: 18px;">
+            <div class="sentiment-card">
+              <div class="label-row">
+                <span class="badge ${klass}">${escapeHtml(a.sentiment.overall)}</span>
+              </div>
+              ${scoreBarHtml(a.sentiment.score)}
+              ${confidenceBarHtml(a.sentiment.confidence)}
+              <div class="rationale">${escapeHtml(a.sentiment.rationale)}</div>
+            </div>
+            <div>
+              <h3 class="section">Summary</h3>
+              <p class="summary">${escapeHtml(a.summary)}</p>
+            </div>
+          </div>
+
+          <div style="margin-top: 22px;">
+            <h3 class="section">Entities</h3>
+            <div class="pills">${entities}</div>
+          </div>
+
+          <div style="margin-top: 22px;">
+            <h3 class="section">Key claims</h3>
+            <ul class="claims">${claims}</ul>
+          </div>
+
+          <div style="margin-top: 22px;">
+            <h3 class="section">Topics</h3>
+            <div class="pills">${topics}</div>
+          </div>
+
+          <div class="meta-strip">
+            <div class="item">model <strong>${escapeHtml(a.model_used)}</strong></div>
+            <div class="item">tokens <strong>${a.tokens_used.toLocaleString()}</strong></div>
+            <div class="item">cache <strong class="${a.cached ? 'cache-yes' : 'cache-no'}">${a.cached ? 'HIT' : 'MISS'}</strong></div>
+            <div class="item">time <strong>${a.analysis_ms.toLocaleString()} ms</strong></div>
+          </div>
+        </div>`;
+    }
+
+    function renderFeed(feed) {
+      const head = `
+        <div class="panel">
+          <div class="article-head">
+            <h2>${escapeHtml(feed.feed_title || "Feed")}</h2>
+          </div>
+          <div class="article-url"><a href="${escapeHtml(feed.feed_url)}" target="_blank" rel="noopener">${escapeHtml(feed.feed_url)}</a></div>
+          <div class="feed-summary" style="margin-top: 14px;">
+            <span><strong>${feed.items_succeeded}</strong> / ${feed.items_attempted} items analyzed</span>
+            <span>${feed.items_attempted - feed.items_succeeded} failed</span>
+          </div>
+        </div>`;
+
+      const items = feed.results.map(r => {
+        if (r.analysis) {
+          const a = r.analysis;
+          const klass = labelClass(a.sentiment.overall);
+          return `
+            <div class="feed-item">
+              <h4>${escapeHtml(a.title || "Untitled")}</h4>
+              <div class="url"><a href="${escapeHtml(a.url)}" target="_blank" rel="noopener">${escapeHtml(a.url)}</a></div>
+              <div class="row">
+                <span class="badge ${klass}">${escapeHtml(a.sentiment.overall)}</span>
+                <span style="color: var(--muted); font-size: 12px;">
+                  score ${a.sentiment.score.toFixed(2)} · conf ${a.sentiment.confidence.toFixed(2)}
+                  · ${a.cached ? "cached" : "live"} · ${a.tokens_used.toLocaleString()} tok
+                </span>
+              </div>
+              <p class="summary" style="margin: 10px 0 0; font-size: 13px; color: var(--muted);">${escapeHtml(a.summary)}</p>
+            </div>`;
+        }
+        const e = r.error;
+        return `
+          <div class="feed-item failed">
+            <h4 style="color: #ff7b72;">${escapeHtml(e.error_code)}</h4>
+            <div class="url"><a href="${escapeHtml(e.url)}" target="_blank" rel="noopener">${escapeHtml(e.url)}</a></div>
+            <p class="summary" style="margin: 10px 0 0; font-size: 13px; color: var(--muted);">${escapeHtml(e.error_message)}</p>
+          </div>`;
+      }).join("");
+
+      return head + items;
+    }
+
+    // ─── handlers ──────────────────────────────────────────────────────────
+    async function postJson(path, body, btn) {
+      btn.disabled = true;
+      setStatus(`<span class="spinner"></span>Analyzing…`);
+      const t0 = performance.now();
+      try {
+        const r = await fetch(path, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        const took = Math.round(performance.now() - t0);
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) {
+          setStatus(`<span style="color:#ff7b72;">Failed in ${took} ms · HTTP ${r.status}</span>`);
+          return { ok: false, data, status: r.status };
+        }
+        setStatus(`<span style="color:#56d364;">Done in ${took} ms</span>`);
+        return { ok: true, data };
+      } catch (err) {
+        setStatus(`<span style="color:#ff7b72;">Network error: ${escapeHtml(err.message)}</span>`);
+        return { ok: false, data: { error: "network_error", message: err.message } };
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    document.getElementById("url-form").addEventListener("submit", async (ev) => {
+      ev.preventDefault();
+      const url = document.getElementById("url-input").value.trim();
+      const force = document.getElementById("url-force").checked;
+      if (!url) return;
+      const btn = ev.submitter;
+      const result = document.getElementById("result");
+      result.innerHTML = "";
+      const { ok, data, status } = await postJson("/analyze", { url, force_refresh: force }, btn);
+      result.innerHTML = ok ? renderAnalysis(data) : renderError(data, status);
+    });
+
+    document.getElementById("feed-form").addEventListener("submit", async (ev) => {
+      ev.preventDefault();
+      const feed_url = document.getElementById("feed-input").value.trim();
+      const limit = parseInt(document.getElementById("feed-limit").value, 10) || 5;
+      const force = document.getElementById("feed-force").checked;
+      if (!feed_url) return;
+      const btn = ev.submitter;
+      const result = document.getElementById("result");
+      result.innerHTML = "";
+      const { ok, data, status } = await postJson("/analyze/feed", { feed_url, limit, force_refresh: force }, btn);
+      result.innerHTML = ok ? renderFeed(data) : renderError(data, status);
+    });
+  </script>
+</body>
+</html>

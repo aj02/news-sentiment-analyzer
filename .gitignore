@@ -1,0 +1,59 @@
+# ─── Secrets — NEVER commit ────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ─── Python ─────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+*.egg
+.eggs/
+pip-wheel-metadata/
+
+# Virtualenvs
+.venv/
+venv/
+env/
+ENV/
+
+# Build / dist
+dist/
+build/
+*.whl
+wheels/
+
+# Testing / coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+
+# Type / lint caches
+.mypy_cache/
+.ruff_cache/
+.dmypy.json
+
+# ─── IDEs / editors ─────────────────────────────────────────────────────────
+.vscode/
+.idea/
+.vs/
+*.swp
+*.swo
+*~
+.cursorignore
+
+# ─── OS junk ────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+ehthumbs.db
+
+# ─── Misc ───────────────────────────────────────────────────────────────────
+*.log
+*.pid
+.pid
+*.local

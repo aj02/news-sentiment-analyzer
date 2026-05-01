@@ -1,0 +1,31 @@
+{
+  "url": "https://www.reuters.com/technology/example-acme-data-breach-investigation",
+  "title": "Internal documents reveal years of ignored warnings before Acme breach",
+  "published_at": "2026-04-22T11:14:00+00:00",
+  "summary": "A Reuters investigation reports that engineers at Acme Industries flagged the security gaps that led to last quarter's customer-data breach as far back as 2023, but were repeatedly told to deprioritize the work. Internal documents reviewed by Reuters describe a pattern of dismissed escalations and budget cuts to the security team.",
+  "sentiment": {
+    "overall": "negative",
+    "score": -0.7,
+    "confidence": 0.91,
+    "rationale": "Loaded language including 'ignored warnings', 'repeatedly told to deprioritize', and 'pattern of dismissed escalations' frames Acme unfavorably. The article centers on accountability rather than balanced both-sides coverage."
+  },
+  "entities": [
+    { "name": "Acme Industries", "type": "org", "sentiment": "negative", "mentions": 11 },
+    { "name": "Reuters", "type": "org", "sentiment": "neutral", "mentions": 3 },
+    { "name": "Maria Chen", "type": "person", "sentiment": "neutral", "mentions": 2 },
+    { "name": "Federal Trade Commission", "type": "org", "sentiment": "neutral", "mentions": 1 }
+  ],
+  "key_claims": [
+    { "claim": "Acme engineers flagged the security gaps that enabled the breach as early as 2023.", "stance": "reported" },
+    { "claim": "Engineers were repeatedly told to deprioritize the security work in favor of feature delivery.", "stance": "reported" },
+    { "claim": "The internal security team's budget was reduced over consecutive fiscal years.", "stance": "asserted" },
+    { "claim": "Customer data of approximately 4.2 million accounts was exposed in the breach.", "stance": "asserted" },
+    { "claim": "The FTC has opened an inquiry into the company's disclosures.", "stance": "asserted" },
+    { "claim": "Acme declined to comment on specific allegations.", "stance": "asserted" }
+  ],
+  "topics": ["data-breach", "corporate-accountability", "cybersecurity", "regulation"],
+  "model_used": "claude-haiku-4-5",
+  "tokens_used": 4218,
+  "cached": false,
+  "analysis_ms": 2456
+}
